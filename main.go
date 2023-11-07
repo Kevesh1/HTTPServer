@@ -68,11 +68,6 @@ func handleRequest(conn net.Conn) {
 		return
 	}
 
-	if request.Method != "GET" {
-		sendErrorResponse(conn, http.StatusNotImplemented)
-		return
-	}
-
 	if request.Method == "GET" {
 		handleGetRequest(conn, request)
 	} else if request.Method == "POST" {
@@ -96,6 +91,8 @@ func getContentType(filePath string) string {
 	switch {
 	case strings.HasSuffix(filePath, ".html"):
 		return "text/html"
+	case strings.HasSuffix(filePath, ".json"):
+		return "application/json"
 	case strings.HasSuffix(filePath, ".txt"):
 		return "text/plain"
 	case strings.HasSuffix(filePath, ".gif"):
@@ -158,6 +155,7 @@ func handlePostRequest(conn net.Conn, request *http.Request) {
 
 	buffer := make([]byte, 4096)
 	n, err := request.Body.Read(buffer)
+	filepath := request.URL.Path
 	if err != nil && err != io.EOF {
 		fmt.Printf("Error reading POST data: %s\n", err)
 		sendErrorResponse(conn, http.StatusInternalServerError)
@@ -168,7 +166,7 @@ func handlePostRequest(conn net.Conn, request *http.Request) {
 
 	response := "HTTP/1.1 200 OK\r\n" +
 		"Content-Length: " + fmt.Sprint(len(data)) + "\r\n" +
-		"Content-Type: text/plain\r\n" +
+		"Content-Type: " + getContentType(filepath) + "\r\n" +
 		"\r\n" +
 		string(data)
 
