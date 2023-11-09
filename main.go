@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 )
 
-func handleRequest(conn net.Conn, router *router) {
+func handleRequest(conn net.Conn) {
 	defer conn.Close()
 
 	// Parse the HTTP request
 	request, err := http.ReadRequest(bufio.NewReader(conn))
+
+
 	
 	if err != nil {
 		fmt.Println("Error fetching request ", err)
@@ -20,32 +22,32 @@ func handleRequest(conn net.Conn, router *router) {
 	}
 
 	if request.Method != "GET" && request.Method != "POST" {
-		errorStatus(conn, http.StatusNotImplemented)
+		Status(conn, http.StatusNotImplemented)
 		return
 	}
 
 	// Handle different HTTP methods (GET, POST, etc.)
 
 	if request.Method == "GET" {
-		handleGetRequest(conn, request, router)
+		handleGetRequest(conn, request)
 	} else if request.Method == "POST" {
-		handlePostRequest(conn, request, router)
+		handlePostRequest(conn, request)
 	}
 
 	// Respond with appropriate status code, headers, and content
 }
 
-func handleGetRequest(conn net.Conn, request *http.Request, router *router) {
+func handleGetRequest(conn net.Conn, request *http.Request) {
 	requestedPath := request.URL.Path[1:]
 
 	contentType := getContentType(requestedPath)
 
 	if contentType == "" {
-		errorStatus(conn, http.StatusBadRequest)
+		Status(conn, http.StatusBadRequest)
 		return
 	}
 
-	fileContent := router.GET(requestedPath)
+	fileContent := GET(requestedPath)
 	fmt.Println(fileContent)
 
 	// Create an HTTP response with a 200 OK status and the appropriate headers
@@ -60,7 +62,7 @@ func handleGetRequest(conn net.Conn, request *http.Request, router *router) {
 	}
 }
 
-func handlePostRequest(conn net.Conn, request *http.Request, router *router) {
+func handlePostRequest(conn net.Conn, request *http.Request) {
 	file, fileHeader, err := request.FormFile("file")
 
 	if err != nil {
@@ -68,7 +70,7 @@ func handlePostRequest(conn net.Conn, request *http.Request, router *router) {
 	}
 	defer file.Close()
 
-	router.POST(fileHeader.Filename)
+	POST(fileHeader.Filename)
 
 	response := "HTTP/1.1 201 Created\r\n" +
 		"Content-Length: 0\r\n" +
@@ -99,7 +101,7 @@ func getContentType(fileName string) string {
 	}
 }
 
-func errorStatus(conn net.Conn, status int) {
+func Status(conn net.Conn, status int) {
 	response := fmt.Sprintf("HTTP/1.1 %d %s\r\r\r\n", status, http.StatusText(status))
 
 	// Write the response to the client's connection
@@ -124,7 +126,6 @@ func main() {
 	}
 	defer listener.Close()
 
-	router := NewRouter()
 
 
 	max_processess := 10
@@ -141,7 +142,7 @@ func main() {
 		process <- 1
 		go func() {
 			fmt.Println(len(process))
-			handleRequest(clientConn, router)
+			handleRequest(clientConn)
 			<-process // Release the worker when done
 			fmt.Println("Request finished", len(process))
 			fmt.Println("_______________")
