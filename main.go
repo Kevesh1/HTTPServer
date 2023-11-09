@@ -13,6 +13,7 @@ func handleRequest(conn net.Conn, router *router) {
 
 	// Parse the HTTP request
 	request, err := http.ReadRequest(bufio.NewReader(conn))
+	
 	if err != nil {
 		fmt.Println("Error fetching request ", err)
 		// Handle parsing error and respond with a 400 Bad Request
@@ -109,9 +110,13 @@ func errorStatus(conn net.Conn, status int) {
 }
 
 func main() {
-	port := ":8080"
+	//port := ":8080"
+	fmt.Println("Enter what port to listen from: ")
+	var port string 
 
-	listener, err := net.Listen("tcp", port)
+	fmt.Scanln(&port)
+
+	listener, err := net.Listen("tcp", ":" + port)
 	if err != nil {
 		fmt.Println("Error ", err)
 		return
@@ -121,6 +126,10 @@ func main() {
 
 	router := NewRouter()
 
+
+	max_processess := 10
+	process := make(chan int, max_processess)
+
 	// Create a worker pool for handling concurrent requests
 	fmt.Println("Running on port: ", port)
 	for {
@@ -129,6 +138,13 @@ func main() {
 			fmt.Println("Error ", err)
 			continue
 		}
-		go handleRequest(clientConn, router)
+		process <- 1
+		go func() {
+			fmt.Println(len(process))
+			handleRequest(clientConn, router)
+			<-process // Release the worker when done
+			fmt.Println("Request finished", len(process))
+			fmt.Println("_______________")
+		}()
 	}
 }

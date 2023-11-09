@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sync"
 )
 
 type route struct {
@@ -17,19 +18,28 @@ type router struct {
 	routes []route
 }
 
+var lock sync.Mutex
+
 func NewRouter() *router {
 	return &router{routes: []route{}}
 }
 
 func (r *router) POST(fileName string) {
-	path := "C:\\Users\\Keivan\\Downloads\\" + fileName
+	path := "C:\\Users\\keiva\\Downloads\\" + fileName
 	fileContent, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("Error POSTING file: ", err)
 	}
 	fmt.Println(fileContent)
+	for _, route := range r.routes {
+		if fileName == route.fileName{
+			route.fileContent = fileContent
+		}
+	} 
+	lock.Lock()
 	route := route{fileName, fileContent}
 	r.routes = append(r.routes, route)
+	lock.Unlock()
 }
 
 func (r *router) GET(fileName string) []byte {
@@ -37,6 +47,8 @@ func (r *router) GET(fileName string) []byte {
 		if fileName == route.fileName {
 			return route.fileContent
 		}
+		//TODO
+		//Implement 404 not found
 	}
 	fmt.Println("File not found")
 	return []byte{}
