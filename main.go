@@ -14,15 +14,15 @@ func handleRequest(conn net.Conn) {
 	// Parse the HTTP request
 	request, err := http.ReadRequest(bufio.NewReader(conn))
 
-
-	
 	if err != nil {
 		fmt.Println("Error fetching request ", err)
+		Status(conn, http.StatusBadRequest)
 		// Handle parsing error and respond with a 400 Bad Request
 	}
 
 	if request.Method != "GET" && request.Method != "POST" {
 		Status(conn, http.StatusNotImplemented)
+		fmt.Println("NOT IMPLEMENTED")
 		return
 	}
 
@@ -40,7 +40,7 @@ func handleRequest(conn net.Conn) {
 func handleGetRequest(conn net.Conn, request *http.Request) {
 	requestedPath := request.URL.Path[1:]
 
-	contentType := getContentType(requestedPath)
+	contentType := GetContentType(requestedPath)
 
 	if contentType == "" {
 		Status(conn, http.StatusBadRequest)
@@ -48,6 +48,10 @@ func handleGetRequest(conn net.Conn, request *http.Request) {
 	}
 
 	fileContent := GET(requestedPath)
+	if len(fileContent) == 0 {
+		Status(conn, http.StatusNotFound)
+		return
+	}
 	fmt.Println(fileContent)
 
 	// Create an HTTP response with a 200 OK status and the appropriate headers
@@ -79,7 +83,7 @@ func handlePostRequest(conn net.Conn, request *http.Request) {
 
 }
 
-func getContentType(fileName string) string {
+func GetContentType(fileName string) string {
 	// Determine the content type based on the file's extension
 	// You can map file extensions to content types (e.g., .html -> "text/html")
 	// or use the standard library's mime package for a more comprehensive mapping.
@@ -114,19 +118,19 @@ func Status(conn net.Conn, status int) {
 func main() {
 	//port := ":8080"
 	fmt.Println("Enter what port to listen from: ")
-	var port string 
+	var port string
 
 	fmt.Scanln(&port)
 
-	listener, err := net.Listen("tcp", ":" + port)
+	go StartProxy()
+
+	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		fmt.Println("Error ", err)
 		return
 
 	}
 	defer listener.Close()
-
-
 
 	max_processess := 10
 	process := make(chan int, max_processess)
