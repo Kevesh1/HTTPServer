@@ -32,7 +32,7 @@ One for building the image and the other to run the container
 docker build --tag http-server .
 ```
 ```
-docker run --publish 8080:8080 http-server
+docker run --p 8080:8080 --p 8081:8081 http-server
 //This will expose the containers 8080 port to our local port 8080
 ```
 
