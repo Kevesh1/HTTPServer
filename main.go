@@ -15,14 +15,14 @@ func handleRequest(conn net.Conn) {
 	request, err := http.ReadRequest(bufio.NewReader(conn))
 
 	if err != nil {
-		fmt.Println("Error fetching request ", err)
+		fmt.Println("Server: Error fetching request ", err)
 		Status(conn, http.StatusBadRequest)
 		// Handle parsing error and respond with a 400 Bad Request
 	}
 
 	if request.Method != "GET" && request.Method != "POST" {
 		Status(conn, http.StatusNotImplemented)
-		fmt.Println("NOT IMPLEMENTED")
+		fmt.Println("Server: NOT IMPLEMENTED")
 		return
 	}
 
@@ -70,7 +70,7 @@ func handlePostRequest(conn net.Conn, request *http.Request) {
 	file, fileHeader, err := request.FormFile("file")
 
 	if err != nil {
-		fmt.Println("Error submitting file: ", err)
+		fmt.Println("Server: Error submitting file: ", err)
 	}
 	defer file.Close()
 
@@ -111,13 +111,13 @@ func Status(conn net.Conn, status int) {
 	// Write the response to the client's connection
 	_, err := conn.Write([]byte(response))
 	if err != nil {
-		fmt.Println("Error writing response:", err)
+		fmt.Println("Server: Error writing response:", err)
 	}
 }
 
 func main() {
 	//port := ":8080"
-	fmt.Println("Enter what port to listen from: ")
+	fmt.Println("Server: Enter what port to listen from: ")
 	var port string
 
 	fmt.Scanln(&port)
@@ -126,7 +126,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		fmt.Println("Error ", err)
+		fmt.Println("Server: Error ", err)
 		return
 
 	}
@@ -136,11 +136,11 @@ func main() {
 	process := make(chan int, max_processess)
 
 	// Create a worker pool for handling concurrent requests
-	fmt.Println("Running on port: ", port)
+	fmt.Println("Server: Running on port: ", port)
 	for {
 		clientConn, err := listener.Accept()
 		if err != nil {
-			fmt.Println("Error ", err)
+			fmt.Println("Server: Error ", err)
 			continue
 		}
 		process <- 1
@@ -148,7 +148,7 @@ func main() {
 			fmt.Println(len(process))
 			handleRequest(clientConn)
 			<-process // Release the worker when done
-			fmt.Println("Request finished", len(process))
+			fmt.Println("Server: Request finished", len(process))
 			fmt.Println("_______________")
 		}()
 	}

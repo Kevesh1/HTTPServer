@@ -16,13 +16,13 @@ func POST(fileName string) {
 	writePath := filepath.Join("./test/" + fileName)
 	file, err := os.Create(savePath)
 	if err != nil {
-		fmt.Println("Error POSTING: ", err)
+		fmt.Println("Handler: Error POSTING: ", err)
 	}
 	defer file.Close()
 
 	fileContent, err := os.ReadFile(writePath)
 	if err != nil {
-		fmt.Println("Error reading file: ", err)
+		fmt.Println("Handler: Error reading file: ", err)
 	}
 	file.Write(fileContent)
 	lock.Unlock()
@@ -32,18 +32,18 @@ func GET(fileName string) []byte {
 	path := "./files/" + fileName
 	fileContent, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Println("Error reading file: ", err)
+		fmt.Println("Handler: Error reading file: ", err)
 	}
 
 	savedFiles, err := os.Open("./files")
 	if err != nil {
-		fmt.Println("error opening directory: ", err)
+		fmt.Println("Handler: error opening directory: ", err)
 	}
 	defer savedFiles.Close()
 
 	files, err := savedFiles.Readdir(-1)
 	if err != nil {
-		fmt.Println("error reading directory:", err)
+		fmt.Println("Handler: error reading directory:", err)
 	}
 
 	for _, files := range files {
@@ -52,6 +52,6 @@ func GET(fileName string) []byte {
 		}
 	}
 
-	fmt.Println("File not found")
+	fmt.Println("Handler: File not found")
 	return []byte{}
 }

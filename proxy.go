@@ -14,28 +14,28 @@ func StartProxy() {
 
 	time.Sleep(1 * time.Second)
 
-	fmt.Println("Enter what port to start proxy server from: ")
+	fmt.Println("Proxy: Enter what port to start proxy server from: ")
 	var port string
 
 	fmt.Scanln(&port)
 
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		fmt.Println("Error ", err)
+		fmt.Println("Proxy: Error ", err)
 		return
 
 	}
 	defer listener.Close()
 
 	// Create a worker pool for handling concurrent requests
-	fmt.Println("Running on port: ", port)
+	fmt.Println("Proxy: Running on port: ", port)
 	for {
 		clientConn, err := listener.Accept()
 		if err != nil {
-			fmt.Println("Error ", err)
+			fmt.Println("Proxy: Error ", err)
 			continue
 		}
-		fmt.Println("BEFORE HANDLE")
+		fmt.Println("Proxy: BEFORE HANDLE")
 		go handleConn(clientConn)
 	}
 }
@@ -47,25 +47,26 @@ func handleConn(conn net.Conn) {
 	request, err := http.ReadRequest(bufio.NewReader(conn))
 
 	if err != nil {
-		fmt.Println("Error fetching request ", err)
+		fmt.Println("Proxy: Error fetching request ", err)
 		// Handle parsing error and respond with a 400 Bad Request
 	}
 
 	if request.Method != "GET" {
 		Status(conn, http.StatusNotImplemented)
+		conn.Write([]byte("501 Req Method Not Implemented"))
 		return
 	}
 
 	mainServer, err := net.Dial("tcp", "localhost:8080")
 	if err != nil {
-		fmt.Println("Error connecting to main server: ", err)
+		fmt.Println("Proxy: Error connecting to main server: ", err)
 	}
 	defer mainServer.Close()
 
 	// Forward the client's GET request to the remote server
 	err = request.Write(mainServer)
 	if err != nil {
-		fmt.Println("Error forwarding request ", err)
+		fmt.Println("Proxy: Error forwarding request ", err)
 		// Handle forwarding error and respond with a 500 Internal Server Error
 		Status(conn, http.StatusInternalServerError)
 		return
@@ -74,7 +75,7 @@ func handleConn(conn net.Conn) {
 	// Read the remote server's response
 	mainResponse, err := http.ReadResponse(bufio.NewReader(mainServer), nil)
 	if err != nil {
-		fmt.Println("Error reading response ", err)
+		fmt.Println("Proxy: Error reading response ", err)
 		Status(conn, http.StatusNotFound)
 		return
 
@@ -87,14 +88,14 @@ func handleConn(conn net.Conn) {
 	// Write the constructed response headers to the client's connection
 	_, err = conn.Write([]byte(response))
 	if err != nil {
-		fmt.Printf("Error writing response headers: %s\n", err)
+		fmt.Printf("Proxy: Error writing response headers: %s\n", err)
 		return
 	}
 
 	// Copy the main server's response body to the client's connection
 	_, err = io.Copy(conn, mainResponse.Body)
 	if err != nil {
-		fmt.Printf("Error copying response body: %s\n", err)
+		fmt.Printf("Proxy: Error copying response body: %s\n", err)
 		return
 	}
 }
