@@ -10,6 +10,8 @@ RUN go mod download
 
 COPY . .
 
+# Go can't call C code
+# OS: Linux
 RUN CGO_ENABLED=0 GOOS=linux go build -o /httpserver
 
 ENV PORT=8080
