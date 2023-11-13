@@ -29,7 +29,7 @@ For a docker environment you will run two commands.
 One for building the image and the other to run the container
 
 ```
-docker build --tag http-server .
+docker build --tag httpserver .
 ```
 ```
 docker run -e MAIN-PORT=8080 -e PROXY-PORT=8081 --publish 8080:8080 --publish 8081:8081 httpserver
@@ -44,6 +44,11 @@ docker run -e MAIN-PORT=8080 -e PROXY-PORT=8081 --publish 8080:8080 --publish 80
 To test the functionality of the proxy server and server we can curl files
 from the ./test folder. Unfortunatly readable files are limited to that folder.
 
+#### Example request
+```
+curl -F "file=@testA.txt" http://localhost:8080
+```
+
 When curling for example test.jpg to the server it will be stored in the ./files folder.
 
 If there was an error with a request the error will be displayed in either the server or client window
@@ -52,3 +57,8 @@ depending on what error you create.
 ### GET 
 You can test this either through the proxy adress or the server adress.
 The results will be the same. A file can only be fetched if it exists in the ./files folder
+
+#### Example request
+```
+curl -X GET http://localhost:8081/testA.txt
+```
