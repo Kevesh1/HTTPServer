@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/joho/godotenv"
 )
 
 func handleRequest(conn net.Conn) {
@@ -117,12 +119,15 @@ func Status(conn net.Conn, status int) {
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("Error loading .env file:", err)
+	}
 	//port := ":8080"
 	fmt.Println("Server: Enter what port to listen from: ")
 	//var port string
 
 	//fmt.Scanln(&port)
-	port := os.Getenv("MAIN-PORT")
+	port := os.Getenv("MAIN_PORT")
 
 	go StartProxy()
 

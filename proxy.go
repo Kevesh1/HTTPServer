@@ -7,20 +7,26 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 	//"net/http"
 )
 
 func StartProxy() {
 
 	time.Sleep(1 * time.Second)
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("Error loading .env file:", err)
+	}
 
 	fmt.Println("Proxy: Enter what port to start proxy server from: ")
 	//var port string
 
 	//fmt.Scanln(&port)
 
-	port := os.Getenv("PROXY-PORT")
+	port := os.Getenv("PROXY_PORT")
 
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -38,7 +44,6 @@ func StartProxy() {
 			fmt.Println("Proxy: Error ", err)
 			continue
 		}
-		fmt.Println("Proxy: BEFORE HANDLE")
 		go handleConn(clientConn)
 	}
 }
@@ -59,9 +64,11 @@ func handleConn(conn net.Conn) {
 		conn.Write([]byte("501 Req Method Not Implemented"))
 		return
 	}
-	mainPort := os.Getenv("MAIN-PORT")
+	mainPort := os.Getenv("MAIN_PORT")
+	ipAdress := strings.Split(request.Host, ":")[0]
+	//fmt.Println(ipAdress)
 
-	mainServer, err := net.Dial("tcp", "localhost:"+mainPort)
+	mainServer, err := net.Dial("tcp", ipAdress+":"+mainPort)
 	if err != nil {
 		fmt.Println("Proxy: Error connecting to main server: ", err)
 	}

@@ -7,7 +7,7 @@ Brief description of the project.
 ### local env
 In a local environment you only need to run the command 
 ```
-go run .
+go build; go run .
 ```
 
 After this you need to give the server the port 8080
@@ -32,7 +32,7 @@ One for building the image and the other to run the container
 docker build --tag http-server .
 ```
 ```
-docker run -e MAIN-PORT=8080 -e PROXY-PORT=8081 --publish 8080:8080 --publish 8081:8081 httpserver
+docker run -e MAIN_PORT=8080 -e PROXY_PORT=8081 --publish 8080:8080 --publish 8081:8081 httpserver
 //This will expose the containers 8080 port to our local port 8080 and same with 8081
 //and will set the .env variables to our desired ports in the go servers
 ```
