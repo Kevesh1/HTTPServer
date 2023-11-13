@@ -59,8 +59,9 @@ func handleConn(conn net.Conn) {
 		conn.Write([]byte("501 Req Method Not Implemented"))
 		return
 	}
+	mainPort := os.Getenv("MAIN-PORT")
 
-	mainServer, err := net.Dial("tcp", "localhost:8080")
+	mainServer, err := net.Dial("tcp", "localhost:"+mainPort)
 	if err != nil {
 		fmt.Println("Proxy: Error connecting to main server: ", err)
 	}
