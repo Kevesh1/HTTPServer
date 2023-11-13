@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
@@ -118,9 +119,10 @@ func Status(conn net.Conn, status int) {
 func main() {
 	//port := ":8080"
 	fmt.Println("Server: Enter what port to listen from: ")
-	var port string
+	//var port string
 
-	fmt.Scanln(&port)
+	//fmt.Scanln(&port)
+	port := os.Getenv("MAIN-PORT")
 
 	go StartProxy()
 

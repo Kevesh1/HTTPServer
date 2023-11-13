@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"time"
 	//"net/http"
 )
@@ -15,9 +16,11 @@ func StartProxy() {
 	time.Sleep(1 * time.Second)
 
 	fmt.Println("Proxy: Enter what port to start proxy server from: ")
-	var port string
+	//var port string
 
-	fmt.Scanln(&port)
+	//fmt.Scanln(&port)
+
+	port := os.Getenv("PROXY-PORT")
 
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {

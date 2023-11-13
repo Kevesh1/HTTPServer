@@ -32,8 +32,9 @@ One for building the image and the other to run the container
 docker build --tag http-server .
 ```
 ```
-docker run --p 8080:8080 --p 8081:8081 http-server
-//This will expose the containers 8080 port to our local port 8080
+docker run -e MAIN-PORT=8080 -e PROXY-PORT=8081 --publish 8080:8080 --publish 8081:8081 httpserver
+//This will expose the containers 8080 port to our local port 8080 and same with 8081
+//and will set the .env variables to our desired ports in the go servers
 ```
 
 
